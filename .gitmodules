@@ -1,0 +1,3 @@
+[submodule "src/00_libraries/00_ui"]
+	path = src/00_libraries/00_ui
+	url = https://github.com/supersoulfighter/phaser-ui.git
