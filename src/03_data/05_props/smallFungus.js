@@ -1,0 +1,11 @@
+//#region 03_data/05_props/smallFungus.js //////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+Props.smallFungus = {
+	key: 'smallFungus',
+	name: 'Small Fungus',
+	passable: true,
+	anim: 'small-fungus',
+};
+
+//#endregion

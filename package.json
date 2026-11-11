@@ -9,6 +9,7 @@
     "dev": "node log.js dev & vite --config vite/config.dev.mjs",
     "build": "node log.js build & vite build --config vite/config.prod.mjs",
     "dev-nolog": "vite --config vite/config.dev.mjs",
+    "vendor-geotic": "node tools/vendor-geotic.mjs",
     "build-nolog": "vite build --config vite/config.prod.mjs",
     "build-desktop": "vite build --config vite/config.desktop.mjs"
   },
@@ -18,5 +19,7 @@
     "terser": "^5.39.0",
     "vite": "^8.3.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "geotic": "^4.3.2"
+  }
 }

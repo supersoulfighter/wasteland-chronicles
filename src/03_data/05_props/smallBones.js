@@ -1,0 +1,11 @@
+//#region 03_data/05_props/smallBones.js ///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+Props.smallBones = {
+	key: 'smallBones',
+	name: 'Small Bones',
+	passable: true,
+	anim: 'small-bones',
+};
+
+//#endregion

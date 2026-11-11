@@ -1,0 +1,172 @@
+{
+    "activeFile": "level01.tmx",
+    "automapping.whileDrawing": false,
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx": {
+            "scale": 1.9013,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 412.8754010413928,
+                "y": 151.47530636932626
+            }
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Ground_rocks": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Objects": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Objects_animated": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Objects_animated2": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Objects_animated3": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#Water_detilazation": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#details": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Undead_land.tmx#water_coasts": {
+            "scaleInDock": 1
+        },
+        "/Users/jett/Downloads/craftpix-net-695666-free-undead-tileset-top-down-pixel-art/Tiled_files/Water_detilazation2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 2.2807
+        },
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        "ash.tmx": {
+            "scale": 1.1727,
+            "selectedLayer": 16,
+            "viewCenter": {
+                "x": 285.6655581137546,
+                "y": 128.76268440351325
+            }
+        },
+        "cave.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 2.39
+        },
+        "cold.tmx": {
+            "scale": 1.31181640625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.13340281396563,
+                "y": 256.13340281396563
+            }
+        },
+        "dirt.tmx": {
+            "scale": 1.31181640625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.13340281396563,
+                "y": 256.13340281396563
+            }
+        },
+        "hot.tmx": {
+            "scale": 1.31181640625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.13340281396563,
+                "y": 256.13340281396563
+            }
+        },
+        "level01.tmx": {
+            "scale": 4.8203,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 417.40140655145944,
+                "y": 755.7620894965044
+            }
+        },
+        "mud.tmx": {
+            "scale": 1.0029,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 219.36384484993522,
+                "y": 207.39854422175694
+            }
+        },
+        "mutated.tmx": {
+            "scale": 1.31181640625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.13340281396563,
+                "y": 256.13340281396563
+            }
+        },
+        "objects.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1.58
+        },
+        "rock.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "rules.tmx": {
+            "scale": 3.1064,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 377.2856039144991,
+                "y": 127.15683749678082
+            }
+        },
+        "tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 2.27
+        },
+        "waster.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1.5773,
+            "scaleInEditor": 1.58
+        }
+    },
+    "last.exportedFilePath": "/Users/jett/Documents/Work/Projects/Phaser/wasteland-chronicles/art",
+    "last.externalTilesetPath": "/Users/jett/Documents/Work/Projects/Phaser/wasteland-chronicles/art/terrain/Tiled",
+    "last.imagePath": "/Users/jett/Documents/Work/Projects/Phaser/wasteland-chronicles/art/terrain/Tiled/objects",
+    "map.height": 32,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 32,
+    "openFiles": [
+        "level01.tmx",
+        "waster.tsx",
+        "objects.tsx"
+    ],
+    "project": "map.tiled-project",
+    "recentFiles": [
+        "objects.tsx",
+        "waster.tsx",
+        "level01.tmx",
+        "mutated.tmx",
+        "ash.tmx",
+        "cold.tmx",
+        "dirt.tmx",
+        "hot.tmx",
+        "mud.tmx",
+        "tileset.tsx",
+        "rules.tmx",
+        "cave.tsx"
+    ],
+    "tileset.lastUsedExportFilter": "JSON tileset files (*.tsj *.json)",
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    },
+    "tileset.type": 1
+}

@@ -1,0 +1,11 @@
+//#region 03_data/05_props/stalactite.js ///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// Impassable decoration — ceiling spike.
+Props.stalactite = {
+	key: 'stalactite',
+	name: 'Stalactite',
+	anim: 'stalactite',
+};
+
+//#endregion

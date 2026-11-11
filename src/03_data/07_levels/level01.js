@@ -1,0 +1,13 @@
+//#region 03_data/07_levels/level01.js /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+Levels.level01 = {
+	name: 'Shallow Dark',
+	map: 'map01',
+	boss: null,
+	crystals: {
+		cyan: {S: 6, M: 3, L: 1},
+	},
+};
+
+//#endregion

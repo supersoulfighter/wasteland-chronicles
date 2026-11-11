@@ -159,12 +159,13 @@ Vendor step (once, then whenever geotic upgrades):
 
 ```
 yarn add geotic
-yarn add -D esbuild
-esbuild node_modules/geotic --bundle --format=iife \
-  --global-name=Geotic --outfile=src/00_libraries/01_geotic.js
+yarn vendor-geotic
 ```
 
-Wire this as a `vendor:geotic` script in `package.json`.
+`tools/vendor-geotic.mjs` wraps `node_modules/geotic/build/index.js`
+in an IIFE — the dist is already a single self-contained bundle
+(`camelcase` inlined, one `export` line at the end), so no bundler
+is needed, just a file rewrite.
 
 ## Scenes
 

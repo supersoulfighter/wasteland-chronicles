@@ -1,0 +1,7 @@
+//#region 03_data/02_abilities/dexterity.js ////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// Ranged attacks do 10% more damage.
+Abilities.passives.dexterity = {name: 'Dexterity', stat: 'rangedDmg', mult: 1.10};
+
+//#endregion

@@ -1,0 +1,14 @@
+//#region 03_data/07_levels/level02.js /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+Levels.level02 = {
+	name: 'Dripstone Run',
+	map: 'map02',
+	boss: null,
+	crystals: {
+		cyan: {S: 6, M: 3, L: 1},
+		black: 2,
+	},
+};
+
+//#endregion

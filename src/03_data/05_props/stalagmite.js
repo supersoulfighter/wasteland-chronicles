@@ -1,0 +1,11 @@
+//#region 03_data/05_props/stalagmite.js ///////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// Impassable decoration — floor spike.
+Props.stalagmite = {
+	key: 'stalagmite',
+	name: 'Stalagmite',
+	anim: 'stalagmite',
+};
+
+//#endregion
