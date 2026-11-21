@@ -4,6 +4,7 @@
 Levels.level23 = {
 	name: 'The Final Descent',
 	map: 'map23',
+	terrain: 'mutated',
 	boss: null,
 	crystals: {
 		cyan: {S: 14, M: 6, L: 3},

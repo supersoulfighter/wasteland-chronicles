@@ -4,6 +4,7 @@
 Levels.level19 = {
 	name: 'Shattered Veins',
 	map: 'map19',
+	terrain: 'hot',
 	boss: null,
 	crystals: {
 		cyan: {S: 12, M: 6, L: 2},

@@ -4,6 +4,7 @@
 Levels.level05 = {
 	name: 'Fungal Hollow',
 	map: 'map05',
+	terrain: 'ash',
 	boss: null,
 	crystals: {
 		cyan: {S: 7, M: 3, L: 2},

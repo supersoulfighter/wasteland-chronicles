@@ -4,6 +4,7 @@
 Levels.level06 = {
 	name: 'Dam Deep',
 	map: 'map06',
+	terrain: 'ash',
 	boss: 'beaver',
 	crystals: {
 		cyan: {S: 5, M: 3, L: 1},

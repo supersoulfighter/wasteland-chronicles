@@ -4,6 +4,7 @@
 Levels.level12 = {
 	name: "Cougar's Stair",
 	map: 'map12',
+	terrain: 'dirt',
 	boss: 'cougar',
 	crystals: {
 		cyan: {S: 7, M: 3, L: 1},

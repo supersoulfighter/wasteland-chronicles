@@ -4,6 +4,7 @@
 Levels.level21 = {
 	name: 'Condor Heights',
 	map: 'map21',
+	terrain: 'hot',
 	boss: 'condor',
 	crystals: {
 		cyan: {S: 10, M: 5, L: 2},

@@ -17,45 +17,81 @@ const LevelManager = {
 		return this.makeStub(scene, def);
 	},
 
-	// Tiled path — layer names are a contract with the map converter:
-	// 'ground' (walls carry collides: true), 'terrain' (tiles carry a
-	// terrain prop), 'props', and the 'objects' layer that drives
-	// everything else.
+	// Tiled path — the layer contract (architecture.md), bottom to
+	// top: hazard (filled edge-to-edge; tiles carrying a `hazard`
+	// property hurt, the rest are plain fill), ground (walkable
+	// floor, its edges transition to transparent), wall (colliding
+	// rock, tiles carry collides: true), then the objects and
+	// lights object layers, and wall-top drawn over everything —
+	// depth 10 keeps it above the sprites.
+	// Older single-layer maps still load: 'ground' doubles as the
+	// wall layer when no 'wall' exists.
 	loadTiled(scene, def) {
 		const map = scene.make.tilemap({key: def.map});
 		const tiles = map.addTilesetImage('tiles');
-		const ground = map.createLayer('ground', tiles, 0, 0);
-		ground.setCollisionByProperty({collides: true});
-		const terrain = map.getLayer('terrain')
-			? map.createLayer('terrain', tiles, 0, 0) : null;
-		map.createLayer('props', tiles, 0, 0);
-		bindLevel({wallLayer: ground, terrainLayer: terrain});
+		const hazard = map.getLayer('hazard')
+			? map.createLayer('hazard', tiles, 0, 0) : null;
+		const ground = map.getLayer('ground')
+			? map.createLayer('ground', tiles, 0, 0) : null;
+		const wall = map.getLayer('wall')
+			? map.createLayer('wall', tiles, 0, 0)
+			: (ground ?? map.createLayer('wall', tiles, 0, 0));
+		wall.setCollisionByProperty({collides: true});
+		if (map.getLayer('wall-top')) {
+			map.createLayer('wall-top', tiles, 0, 0).setDepth(10);
+		}
+		bindLevel({wallLayer: wall, hazardLayer: hazard,
+			groundLayer: ground});
+		// free tiles FIRST — spawn markers scatter onto them
+		scene.freeTiles = this.freeTiles(wall, ground);
 		this.placeObjects(scene, map);
-		return {map, walls: ground};
+		CrystalManager.scatter(scene, def, scene.freeTiles);
+		return {map, walls: wall};
+	},
+
+	// Spawnable floor: solid ground tiles — not a wall, and not a
+	// transition tile (their edge shapes are where hazard bleeds
+	// through). Crystals scatter and enemy spawnCount both draw
+	// from this list.
+	freeTiles(wall, ground) {
+		const free = [];
+		const base = ground ?? wall;   // single-layer maps: wall IS floor
+		base.forEachTile(t => {
+			if (t.index < 0) return;
+			if (wall.getTileAt(t.x, t.y)?.collides) return;
+			const td = t.tileset
+				?.getTileData(t.index - t.tileset.firstgid);
+			if (ground && td?.objectgroup?.objects?.length) return;
+			free.push({x: t.pixelX + 8, y: t.pixelY + 8});
+		});
+		return free;
 	},
 
 	//#region Objects
-	// The 'objects' layer is a list of named rects/points; each type
-	// fans out to a command or a plain Phaser object — pickups, doors
-	// and zones stay objects, only creatures become entities.
+	// The 'objects' and 'lights' layers list named rects, points,
+	// and tile objects; each type fans out to a command or a plain
+	// Phaser object — pickups, doors and zones stay objects, only
+	// creatures become entities.
 	placeObjects(scene, map) {
-		const objects = map.getObjectLayer('objects');
-		if (!objects) return;
-		objects.objects.forEach(o => this.place(scene, o));
+		['objects', 'lights'].forEach(name => {
+			map.getObjectLayer(name)?.objects
+				.forEach(o => this.place(scene, map, o));
+		});
 	},
 
-	place(scene, o) {
+	place(scene, map, o) {
+		if (o.gid) {
+			// tile object — the enemies tileset's spawn marker
+			this.placeTileObject(scene, map, o);
+			return;
+		}
 		const kind = o.name || o.type;
 		switch (kind) {
 			case 'playerStart':
 				spawnPlayerCmd({scene, x: o.x, y: o.y});
 				break;
 			case 'enemy':
-				spawnEnemyCmd({
-					scene,
-					key: this.propOf(o, 'type'),
-					x: o.x, y: o.y,
-				});
+				this.spawnMarker(scene, o);
 				break;
 			case 'prop': {
 				const def = Props[this.propOf(o, 'type')];
@@ -97,6 +133,54 @@ const LevelManager = {
 		}
 	},
 
+	// Tile-object dispatch — the `enemies` separate-image tileset
+	// marks spawn points. `gid & 0x1FFFFFFF` strips Tiled's flip
+	// flags; the tile's custom `key` property names the Enemies row.
+	placeTileObject(scene, map, o) {
+		const gid = o.gid & 0x1FFFFFFF;
+		const ts = map.tilesets.find(t =>
+			gid >= t.firstgid && gid < t.firstgid + t.total);
+		const props = ts?.getTileProperties(gid - ts.firstgid);
+		if (Enemies[props?.key]) {
+			this.spawnMarker(scene, o, props);
+		}
+	},
+
+	// One spawn marker → `spawnCount` enemies on the free tiles
+	// nearest it. `activationRadius` starts them dormant; 0 (or
+	// missing) = awake on sight. Tile objects take defaults from
+	// the marker tile's own properties; per-instance object
+	// properties always win. `key` falls back to `type` for plain
+	// named 'enemy' rects on old maps.
+	spawnMarker(scene, o, tileProps = {}) {
+		const key = this.propOf(o, 'key')
+			?? tileProps.key ?? this.propOf(o, 'type');
+		if (!Enemies[key]) return;
+		const count = this.propOf(o, 'spawnCount')
+			?? tileProps.spawnCount ?? 1;
+		const activationRadius = this.propOf(o, 'activationRadius')
+			?? tileProps.activationRadius ?? 0;
+		this.scatterSpots(scene, o.x, o.y, count).forEach(spot =>
+			spawnEnemyCmd({
+				scene, key, x: spot.x, y: spot.y, activationRadius,
+			}));
+	},
+
+	// `count` free tiles nearest the marker, so a pack reads as a
+	// pack. The tiles are consumed — the next marker and the
+	// crystal scatter can't land on a spot already taken. A
+	// boxed-in marker falls back to its own spot rather than
+	// silently spawning nothing.
+	scatterSpots(scene, x, y, count) {
+		const pool = scene.freeTiles ?? [];
+		pool.forEach(t => {
+			t.d = dist(x, y, t.x, t.y);
+		});
+		pool.sort((a, b) => a.d - b.d);
+		const near = pool.splice(0, count);
+		return near.length ? near : [{x, y}];
+	},
+
 	// Tiled custom properties arrive as [{name, value}] pairs.
 	propOf(o, name) {
 		return o.properties?.find(p => p.name === name)?.value;
@@ -132,11 +216,21 @@ const LevelManager = {
 		const tiles = map.addTilesetImage('tiles');
 		const layer = map.createLayer(0, tiles, 0, 0);
 		layer.setCollision(2);
-		// mark water tiles' terrain key for TerrainSystem
-		layer.forEachTile(t => {
-			if (t.index === 3) t.properties = {terrain: 'water'};
-		});
-		bindLevel({wallLayer: layer, terrainLayer: layer});
+		// a second layer is the hazard sheet — the stub only knows
+		// water pools (index 3)
+		const hazardLayer = map.createBlankLayer(
+			'hazard', tiles, 0, 0, W, H, 16, 16);
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				if (data[y][x] === 3) {
+					hazardLayer.putTileAt(3, x, y).properties =
+						{hazard: 'water'};
+				}
+			}
+		}
+		bindLevel({wallLayer: layer, hazardLayer});
+		// stub has no ground layer — hazardUnder treats every
+		// hazard-prop tile as bare hazard
 		scene.cameras.main.setBounds(0, 0, W * 16, H * 16);
 		scene.physics.world.setBounds(0, 0, W * 16, H * 16);
 
@@ -150,6 +244,7 @@ const LevelManager = {
 				floor.push({x: t.pixelX + 8, y: t.pixelY + 8});
 			}
 		});
+		scene.freeTiles = floor;
 		CrystalManager.scatter(scene, def, floor);
 		return {map, walls: layer};
 	},

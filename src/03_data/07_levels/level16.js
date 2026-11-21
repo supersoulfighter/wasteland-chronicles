@@ -5,6 +5,7 @@
 Levels.level16 = {
 	name: 'River of Fire',
 	map: 'map16',
+	terrain: 'cold',
 	boss: null,
 	crystals: {
 		cyan: {S: 11, M: 5, L: 2},

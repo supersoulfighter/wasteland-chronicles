@@ -186,21 +186,40 @@ const spawnForPattern = ({scene, attacker, attack, aim}) => {
 			resolveHitCmd({attacker, target, attack}));
 		return;
 	}
-	// a ray, not a projectile — line check each activation
+	// a ray, not a projectile — line check each activation. A
+	// channel pattern re-fires the ray on its tick until the
+	// duration ends (the bear's held burn); a plain beam is one
+	// zap per activation (skunk spray, the Beam active).
 	if (attack.shape?.kind === 'beam' || pattern.kind === 'beam') {
-		beamTargets(attacker, from, aim).forEach(target =>
-			resolveHitCmd({attacker, target, attack}));
+		const fire = () => beamTargets(attacker, from, aim)
+			.forEach(target =>
+				resolveHitCmd({attacker, target, attack}));
+		fire();
+		const tick = pattern.tick ?? 0.1;
+		const ticks = Math.floor((pattern.duration ?? 0) / tick);
+		for (let i = 1; i <= ticks; i++) {
+			scene.time.delayedCall(i * tick * 1000, fire);
+		}
 		return;
 	}
 	// volleys are one spawn per strike on a timer — works for both
-	// melee combos and rapid-fire darts
+	// melee combos and rapid-fire darts. Every strike shares a hit
+	// log so the last one knows whether the whole volley connected
+	// (scorpion's bonusDmg pays only on a perfect volley).
 	if (pattern.kind === 'volley') {
 		const strikes = pattern.strikes ?? 3;
+		const volleyLog = {hits: [], strikes};
 		for (let i = 0; i < strikes; i++) {
 			scene.time.delayedCall(i * (pattern.delay ?? 0.2) * 1000,
 				() => spawnForPattern({
 					scene, attacker,
-					attack: {...attack, pattern: {kind: 'single'}},
+					attack: {
+						...attack,
+						pattern: {kind: 'single'},
+						volleyLog,
+						volleyBonus: pattern.bonusDmg,
+						lastStrike: i === strikes - 1,
+					},
 					aim,
 				}));
 		}
@@ -214,15 +233,24 @@ const spawnForPattern = ({scene, attacker, attack, aim}) => {
 
 	if (isMeleeShape(attack.shape)) {
 		// `ring` on a melee shape = hitboxes radiating from the body
-		// (White's 16 spikes); every other melee pattern spawns one
-		// hitbox — cone arc, volley timing, grab channel are the
-		// command's job, not ours.
+		// (White's 16 spikes). `inner` declares a safe hole — boxes
+		// sit on the band out at that radius, and onMeleeHit ignores
+		// targets closer in.
 		if (pattern.kind === 'ring') {
+			const band = {...attack, ringInner: pattern.inner ?? 0};
 			anglesSpread(0, Math.PI * 2, pattern.count ?? 16, true)
-				.forEach(angle => spawnMeleeboxCmd({...payload, angle}));
+				.forEach(angle => spawnMeleeboxCmd({
+					...payload, attack: band, angle,
+				}));
 			return;
 		}
-		spawnMeleeboxCmd(payload);
+		// `channel: true` on the attack = the box rides the
+		// attacker for a beat (swiftlet's fly-through bite)
+		spawnMeleeboxCmd({
+			...payload,
+			channel: attack.channel
+				? {duration: 0.5, tick: 0.1} : undefined,
+		});
 		return;
 	}
 	projectileAngles(pattern, aim, from).forEach(angle =>
@@ -252,6 +280,11 @@ const attackToBallistic = (attack) => {
 		swallowable: attack.shape?.kind !== 'beam', // rays can't be eaten
 		pattern,
 		speed: attack.speed ?? 400,
+		// projectile volleys share the melee bonus bookkeeping —
+		// the last strike pays volleyBonus if every shot connected
+		volleyLog: attack.volleyLog,
+		volleyBonus: attack.volleyBonus,
+		lastStrike: attack.lastStrike,
 	};
 };
 

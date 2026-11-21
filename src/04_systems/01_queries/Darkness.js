@@ -35,12 +35,14 @@ const Darkness = {
 		if (!this.rt) return;
 		const cam = scene.cameras.main;
 		this.rt.clear().fill(0x050510, 0.85);
+		const visionMult = getGroundDef()?.visionMult ?? 1;
 		for (const e of getQueries().lights.get()) {
 			const s = e.rendered.sprite;
 			this.stamp
 				.setPosition(s.x - cam.scrollX, s.y - cam.scrollY)
-				// stamp is 256px across → scale to the light radius
-				.setScale((e.luminous.radius * 2) / 256);
+				// stamp is 256px across → scale to the light radius;
+				// ash ground dims every hole in the cave
+				.setScale((e.luminous.radius * 2 * visionMult) / 256);
 			this.rt.erase(this.stamp);
 		}
 	},

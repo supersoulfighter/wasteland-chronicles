@@ -12,7 +12,9 @@ class Moveable extends Geotic.Component {
 		intent: {x: 0, y: 0},      // desired direction, -1..1
 		terrainMult: 1,            // TerrainSystem sets this per tile
 		terrainIce: 0,             // ice slide factor, 0 = normal stop
-		terrainDmgMult: 1,         // mutated floors buff damage dealt
+		terrainDmgMult: 1,         // mutated ground buffs damage dealt
+		hazardSecs: 0,             // exposure on the current dps hazard
+		warpAt: 0,                 // ms — last warp hazard teleport
 		dashUntil: 0,              // Charge active — dash channel ends
 		dashDir: {x: 0, y: 0},
 	};

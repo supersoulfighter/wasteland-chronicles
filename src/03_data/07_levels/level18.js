@@ -4,6 +4,7 @@
 Levels.level18 = {
 	name: 'Badger Warrens',
 	map: 'map18',
+	terrain: 'cold',
 	boss: 'badger',
 	crystals: {
 		cyan: {S: 9, M: 4, L: 2},

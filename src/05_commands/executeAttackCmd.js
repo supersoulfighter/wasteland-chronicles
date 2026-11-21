@@ -9,6 +9,8 @@ const executeAttackCmd = ({scene, attacker, attack, aim, target}) => {
 	const now = game.loop.now;
 	const armed = attacker.armed;
 	if (armed && now < armed.readyAt) return;
+	if (attacker.has(Silenced)) return;   // mute = no attacks at all
+	let cost = 0;   // enemies pay nothing; whiffRefund reads this
 
 	if (attacker.controllable) {
 		// player path: crystal def → melee/ranged half, Mutation
@@ -26,7 +28,7 @@ const executeAttackCmd = ({scene, attacker, attack, aim, target}) => {
 		attack = pick.attack;
 		aim = pick.aim;
 		armed.readyAt = now + def.cooldown * 1000;
-		const cost = pick.melee && def.melee
+		cost = pick.melee && def.melee
 			? def.cost / CFG.meleeCostDivisor : def.cost;
 		if (cost) attacker.mutated.spend(cost);
 		if (def.uses !== Infinity) attacker.consumable.spend(def.key);
@@ -38,6 +40,15 @@ const executeAttackCmd = ({scene, attacker, attack, aim, target}) => {
 		if (!attack) return;
 		armed.readyAt = now + (attack.cooldown ?? 1) * 1000;
 		if (attack.anim) attacker.rendered.playAnim(attack.anim);
+		// Regurge Surge: a worm that ate a shot fires the captured
+		// def back instead of its listed attack — swapTemp() slips
+		// it into the slot, revert() after the synchronous spawn
+		const sw = attacker.swallowing;
+		if (sw?.captured) {
+			armed.swapTemp(sw.captured);
+			attack = sw.captured;
+			sw.captured = null;
+		}
 	}
 
 	// attacks marked invulnerable wrap the flag around their
@@ -49,7 +60,13 @@ const executeAttackCmd = ({scene, attacker, attack, aim, target}) => {
 		attacker.add(Invulnerable, {endsAt: now + secs * 1000});
 	}
 
+	// a melee swing that connects with nothing is free — the cost
+	// rides the def so the hitbox can refund it on the way out.
+	// (Whiffing a crate still counts as a whiff: props stay
+	// breakable for free per game.md.)
+	if (attack.isMelee && cost) attack.whiffRefund = cost;
 	spawnForPattern({scene, attacker, attack, aim, target});
+	attacker.armed?.revert();   // Regurge Surge — restore the slot
 };
 
 //#endregion

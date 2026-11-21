@@ -5,6 +5,7 @@
 Levels.level22 = {
 	name: 'Mutagen Pools',
 	map: 'map22',
+	terrain: 'mutated',
 	boss: null,
 	crystals: {
 		cyan: {S: 12, M: 6, L: 3},

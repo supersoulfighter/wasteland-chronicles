@@ -8,7 +8,16 @@
 const spawnMeleeboxCmd = ({scene, attacker, attack, from, angle,
 		channel}) => {
 	const body = makeBody(attack.shape);
-	const zone = scene.add.zone(from.x, from.y, body.w, body.h);
+	// circles come back {r}; the zone's footprint is a 2r square —
+	// close enough at 16px tiles and readable to beginners
+	let size = body.w ?? (body.r ?? 4) * 2;
+	// an effectRadius (yellow's stagger ring) widens the reach
+	if (attack.effectRadius) size = attack.effectRadius * 2;
+	// ring pattern boxes sit out on the band, one per angle
+	const off = attack.ringInner ?? 0;
+	const px = from.x + (angle !== undefined ? Math.cos(angle) * off : 0);
+	const py = from.y + (angle !== undefined ? Math.sin(angle) * off : 0);
+	const zone = scene.add.zone(px, py, size, size);
 	scene.physics.add.existing(zone);
 	zone.body.setAllowGravity(false);
 	// overlap callbacks read these straight off the zone
@@ -42,6 +51,18 @@ const spawnMeleeboxCmd = ({scene, attacker, attack, from, angle,
 		? channel.duration * 1000
 		: CFG.meleeboxMs;
 	scene.time.delayedCall(life, () => zone.destroy());
+
+	// a melee swing that connects with nothing refunds its cost —
+	// the hitbox still ran, so it can still smash crates for free
+	zone.once('destroy', () => {
+		const refund = zone.getData('attack')?.whiffRefund;
+		const a = getWorld().getEntity(zone.getData('attackerId'));
+		if (refund && a?.mutated
+				&& Object.keys(zone.getData('hits')).length === 0) {
+			a.mutated.refill(refund);
+			game.events.emit('mutation-changed', {entity: a});
+		}
+	});
 	return zone;
 };
 

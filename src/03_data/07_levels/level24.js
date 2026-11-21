@@ -5,6 +5,7 @@
 Levels.level24 = {
 	name: "Gorilla's Throne",
 	map: 'map24',
+	terrain: 'mutated',
 	boss: 'gorilla',
 	crystals: {
 		cyan: {S: 10, M: 5, L: 2},

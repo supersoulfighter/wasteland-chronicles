@@ -97,7 +97,11 @@ class Playing extends Phaser.Scene {
 
 		// player
 		this.physics.add.collider(this.playerSprite, walls);
-		this.physics.add.collider(this.playerSprite, this.enemies);
+		this.physics.add.collider(this.playerSprite, this.enemies,
+			(p, es) => {
+				const mine = entityOf(es);
+				if (mine?.launched) this.landLaunched(mine);
+			});
 		this.physics.add.collider(this.playerSprite, this.doors);
 		this.physics.add.collider(this.playerSprite, this.props,
 			null,
@@ -118,7 +122,11 @@ class Playing extends Phaser.Scene {
 
 		// enemies — walls block, neighbors separate; a Launched one is
 		// a projectile and detonates on contact
-		this.physics.add.collider(this.enemies, walls);
+		this.physics.add.collider(this.enemies, walls,
+			(es) => {
+				const e = entityOf(es);
+				if (e?.launched) this.landLaunched(e);
+			});
 		this.physics.add.collider(this.enemies, this.props);
 		this.physics.add.collider(this.enemies, this.doors);
 		this.physics.add.overlap(this.enemies, this.enemies,
@@ -162,6 +170,7 @@ class Playing extends Phaser.Scene {
 		const proj = entityOf(projSprite);
 		const target = entityOf(targetSprite);
 		if (!proj || !target) return;
+		if (target.autonomous?.dormant) return;   // hasn't woken yet
 		const b = proj.ballistic;
 		if (b.ignoredTargets?.includes(target.id)) return;
 		// a worm eats the shot instead of taking the hit
@@ -184,7 +193,9 @@ class Playing extends Phaser.Scene {
 				return;
 			}
 		}
+		b.volleyLog?.hits.push(target.id);
 		resolveHitCmd({attacker: null, target, attack: b});
+		this.volleyBonus(target, b);
 		ProjectileSystem.afterHit(this, proj, target);
 	}
 
@@ -194,6 +205,7 @@ class Playing extends Phaser.Scene {
 	onMeleeHit(zone, targetSprite) {
 		const target = entityOf(targetSprite);
 		if (!target) return;
+		if (target.autonomous?.dormant) return;   // hasn't woken yet
 		const attack = zone.getData('attack');
 		const hits = zone.getData('hits');
 		const channel = zone.getData('channel');
@@ -208,8 +220,37 @@ class Playing extends Phaser.Scene {
 		const a = attacker.rendered.pos();
 		const t = target.rendered.pos();
 		if (!hasLineOfSight(a.x, a.y, t.x, t.y, getWalls())) return;
+		const d = dist(a.x, a.y, t.x, t.y);
+		// ring patterns hit the band, not the hole — inside
+		// `ringInner` you're standing in the safe center
+		if (d < attack.ringInner) return;
 		hits[target.id] = now;
+		attack.volleyLog?.hits.push(target.id);
+		// an effectRadius (yellow's r40 stagger) widened the zone —
+		// targets outside the damage shape only take the effects
+		if (attack.effectRadius && d > (attack.shape?.r ?? Infinity)) {
+			(attack.effects ?? []).forEach(fx =>
+				addStatusCmd({target, attacker, def: fx}));
+			return;
+		}
 		resolveHitCmd({attacker, target, attack});
+		this.volleyBonus(target, attack);
+	}
+
+	// Scorpion's bonus: the last strike pays volleyBonus only when
+	// every strike in the shared log connected with something.
+	volleyBonus(target, attack) {
+		if (!attack.lastStrike || !attack.volleyBonus
+				|| !attack.volleyLog
+				|| attack.volleyLog.hits.length < attack.volleyLog.strikes) {
+			return;
+		}
+		if (target.isDestroyed || target.damageable.dead()) return;
+		target.damageable.apply(-attack.volleyBonus);
+		game.events.emit('health-changed', {entity: target});
+		if (target.damageable.dead()) {
+			dieCmd({entity: target, source: null});
+		}
 	}
 
 	// Launched bodies are projectiles — on bumping another enemy they
@@ -219,6 +260,12 @@ class Playing extends Phaser.Scene {
 		const eb = entityOf(b);
 		const launched = ea?.launched ? ea : eb?.launched ? eb : null;
 		if (!launched) return;
+		this.landLaunched(launched);
+	}
+
+	// A mine (or any Launched body) touches down: burst the AoE,
+	// strip the projectile disguise, and stop it where it landed.
+	landLaunched(launched) {
 		ProjectileSystem.burst(this, launched);
 		launched.remove(launched.launched);
 		if (launched.ballistic) launched.remove(launched.ballistic);

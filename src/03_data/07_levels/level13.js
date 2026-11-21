@@ -4,6 +4,7 @@
 Levels.level13 = {
 	name: 'The Sink',
 	map: 'map13',
+	terrain: 'mud',
 	boss: null,
 	crystals: {
 		cyan: {S: 10, M: 5, L: 2},

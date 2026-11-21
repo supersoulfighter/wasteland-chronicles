@@ -46,11 +46,11 @@
             "scaleInDock": 1
         },
         "ash.tmx": {
-            "scale": 1.1727,
+            "scale": 1.17,
             "selectedLayer": 16,
             "viewCenter": {
-                "x": 285.6655581137546,
-                "y": 128.76268440351325
+                "x": 285.47008547008545,
+                "y": 129.05982905982904
             }
         },
         "cave.tsx": {
@@ -82,19 +82,22 @@
             }
         },
         "level01.tmx": {
-            "scale": 4.8203,
-            "selectedLayer": 4,
+            "expandedObjectLayers": [
+                11
+            ],
+            "scale": 1.0419,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 417.40140655145944,
-                "y": 755.7620894965044
+                "x": 564.3535847970054,
+                "y": 556.67530473174
             }
         },
         "mud.tmx": {
-            "scale": 1.0029,
+            "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 219.36384484993522,
-                "y": 207.39854422175694
+                "x": 219,
+                "y": 207
             }
         },
         "mutated.tmx": {
@@ -108,7 +111,7 @@
         "objects.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 1.58
+            "scaleInEditor": 1.39
         },
         "rock.tsx": {
             "scaleInDock": 1,
@@ -122,14 +125,18 @@
                 "y": 127.15683749678082
             }
         },
+        "tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
         "tileset.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 2.27
         },
         "waster.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 1.5773,
-            "scaleInEditor": 1.58
+            "scaleInDock": 0.5846,
+            "scaleInEditor": 1.39
         }
     },
     "last.exportedFilePath": "/Users/jett/Documents/Work/Projects/Phaser/wasteland-chronicles/art",
@@ -142,21 +149,19 @@
     "map.tileWidth": 16,
     "map.width": 32,
     "openFiles": [
-        "level01.tmx",
-        "waster.tsx",
-        "objects.tsx"
+        "level01.tmx"
     ],
     "project": "map.tiled-project",
     "recentFiles": [
-        "objects.tsx",
-        "waster.tsx",
         "level01.tmx",
-        "mutated.tmx",
+        "waster.tsx",
+        "objects.tsx",
         "ash.tmx",
+        "mud.tmx",
+        "mutated.tmx",
         "cold.tmx",
         "dirt.tmx",
         "hot.tmx",
-        "mud.tmx",
         "tileset.tsx",
         "rules.tmx",
         "cave.tsx"

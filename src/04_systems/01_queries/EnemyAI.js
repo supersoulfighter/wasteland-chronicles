@@ -13,6 +13,18 @@ const EnemyAI = {
 		const now = game.loop.now;
 		for (const e of getQueries().ai.get()) {
 			const ai = e.autonomous;
+			// spawn-marker leashes: hold position until the player
+			// crosses activationRadius, then behave normally forever
+			if (ai.dormant) {
+				const p = e.rendered.pos();
+				const pp = player.rendered.pos();
+				if (dist(p.x, p.y, pp.x, pp.y) > ai.activationRadius) {
+					e.moveable.intent.x = 0;
+					e.moveable.intent.y = 0;
+					continue;
+				}
+				ai.dormant = false;   // it heard you
+			}
 			this.behave(scene, e, ai, player, now);
 			if (now < ai.decisionAt) continue;
 			ai.decisionAt = now + 250;
@@ -53,6 +65,12 @@ const EnemyAI = {
 
 	// Per-frame execution of the current state.
 	behave(scene, e, ai, player, now) {
+		// burrowers travel underground: untouchable while they
+		// reposition, and they have to surface to fight
+		if (ai.style === 'burrow') {
+			this.setBurrowed(e,
+				ai.state === 'maneuver' || ai.state === 'lickWounds');
+		}
 		switch (ai.state) {
 			case 'attack':
 				this.attackStep(scene, e, player);
@@ -65,6 +83,23 @@ const EnemyAI = {
 				this.steerTo(e, player.rendered.pos());
 		}
 		if (now > ai.until && ai.state !== 'attack') ai.state = 'idle';
+	},
+
+	// Down or up. The flags are AI-owned (endsAt Infinity, so
+	// StatusSystem never sweeps them) — only this method removes
+	// them. Burrowed reads as a visual fade and, because
+	// Invulnerable rides along, hazards and hits can't reach it.
+	setBurrowed(e, under) {
+		const s = e.rendered.sprite;
+		if (under && !e.has(Burrowed)) {
+			e.add(Burrowed, {endsAt: Infinity});
+			e.add(Invulnerable, {endsAt: Infinity});
+			s.setAlpha(0.4);
+		} else if (!under && e.has(Burrowed)) {
+			e.remove(e.burrowed);
+			e.remove(e.invulnerable);
+			s.setAlpha(1);
+		}
 	},
 
 	// Steer intent toward a point; arrive → stand still.

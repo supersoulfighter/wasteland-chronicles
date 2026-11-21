@@ -1,10 +1,15 @@
 //#region 03_data/06_terrains/Terrains.js //////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
-// Terrain defs — one file per terrain. TerrainSystem reads these by
-// tile under each mover: moveMult slows, `ice` slides, `lavaDps`
-// burns when idle, `dmgMult` buffs damage dealt while standing on it.
-// `reveal` is the level the terrain first appears (author guide).
-const Terrains = {};
+// Terrain defs — one file per terrain, in two sub-tables (game.md
+// "Terrain" and "Hazards"):
+//   grounds  one per LEVEL (def.terrain) — a map-wide modifier that
+//            applies to every character regardless of position
+//   hazards  per-TILE effects, read off the hazard layer under each
+//            mover — flyers and Burrowed entities skip all of them
+const Terrains = {
+	grounds: {},
+	hazards: {},
+};
 
 //#endregion

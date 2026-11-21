@@ -4,6 +4,7 @@
 Levels.level11 = {
 	name: 'Roost of the Swift',
 	map: 'map11',
+	terrain: 'dirt',
 	boss: null,
 	crystals: {
 		cyan: {S: 9, M: 4, L: 2},

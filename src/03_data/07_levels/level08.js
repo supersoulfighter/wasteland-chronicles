@@ -4,6 +4,7 @@
 Levels.level08 = {
 	name: 'Toadstool Grotto',
 	map: 'map08',
+	terrain: 'dirt',
 	boss: null,
 	crystals: {
 		cyan: {S: 8, M: 4, L: 2},

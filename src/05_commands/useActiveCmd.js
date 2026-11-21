@@ -42,43 +42,39 @@ const useActiveCmd = ({scene, entity}) => {
 		}
 	}
 
-	// one-shot effect defs
-	switch (def.effect) {
-		case 'heal':
-			entity.damageable.apply(def.amount);
-			game.events.emit('health-changed', {entity});
-			break;
+	// one-shot effect defs — `effect` is an object: either a plain
+	// {heal: n} or a {status: …} def routed by its status name
+	const fx = def.effect;
+	if (fx?.heal) {
+		entity.damageable.apply(fx.heal);
+		game.events.emit('health-changed', {entity});
+	}
+	switch (fx?.status) {
 		case 'armor':
 			// refresh or grant the timed mitigation window
 			if (entity.armored) {
-				entity.armored.mult = def.mult;
+				entity.armored.mult = fx.amount;
 				entity.armored.endsAt =
-					game.loop.now + def.secs * 1000;
+					game.loop.now + fx.duration * 1000;
 			} else {
 				entity.add(Armored, {
-					mult: def.mult,
-					endsAt: game.loop.now + def.secs * 1000,
+					mult: fx.amount,
+					endsAt: game.loop.now + fx.duration * 1000,
 				});
 			}
 			break;
 		case 'rage':
-			addStatusCmd({
-				target: entity,
-				def: {
-					status: 'rage', stat: 'dmg',
-					amount: def.mult, duration: def.secs,
-				},
-			});
+			addStatusCmd({target: entity, def: fx});
 			break;
 		case 'antenna':
 			if (entity.attuned) entity.remove(entity.attuned);
 			entity.add(Attuned, {
-				blocksLeft: def.blocks,
+				blocksLeft: fx.blocks,
 				activeKey: key,
 				cooldown: def.cooldown,
 			});
 			break;
-		case 'flip': {
+		case 'flipped': {
 			// nearest Flippable enemy within arm's reach joins us
 			const p = entity.rendered.pos();
 			let best = null;
@@ -93,7 +89,7 @@ const useActiveCmd = ({scene, entity}) => {
 				}
 			}
 			if (best && bd < 96) {
-				flipEntityCmd({scene, entity: best, seconds: def.secs});
+				flipEntityCmd({scene, entity: best, seconds: fx.duration});
 			}
 			break;
 		}

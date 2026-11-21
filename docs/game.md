@@ -52,7 +52,7 @@ Interesting mutation mechanic and intense action.
 While the player's total Mutation store may vary, when their Mutation drops below 50% (of total), damage dealt begins to decrease (on a eased-in-quadratic curve, down to a floor of 10% at 5% Mutation). Below 5% Mutation, the player loses all Mutation-powered abilities, leaving only a weak punch attack (that does not consume Mutation).
 
 ## Movement
-Characters have eight-directional movement, but their sprites are only displayed in four directions (up, down, left, right). The sprite is flipped horizontally when the character is moving left. If character is moving diagonally, the sprite displayed is the last used cardinal direction.
+Characters have eight-directional movement, but their sprites are only displayed in four directions (north, south, east, west). The east sprite is flipped horizontally when the character is moving left. If character is moving diagonally, the sprite displayed is the last used cardinal direction.
 
 ## Attacks
 All attacks in the game come from a Mutated part of a character's body. Attacks have the following attributes:
@@ -245,12 +245,12 @@ The player's level starts at 1 and increases by 1 after completing a game level.
 | Energized   | Energy increased by 10%                       |
 | Boxer       | Melee attacks do 10% more damage              |
 | Dexterity   | Ranged attacks do 10% more damage             |
-| Sealed      | Energy decay reduced to .5                    |
+| Sealed      | Energy decay reduced to .05                   |
 | Nightvision | Greatly increases night vision                |
 | Nimble      | 10% chance of dodging incoming ranged attacks |
 | Slippery    | 10% chance of doding incoming melee attacks   |
 | Sturdy      | 20% chance of avoiding incoming knockdowns    |
-| Swimmer     | Water movement penalty reduced to 33%         |
+| Swimmer     | Water/muck movement penalty reduced by 50%    |
 
 ### Active
 | Key | Name     | Cost | Coo | Dmg | Acu | Pos | Shp | Spd | 
@@ -473,16 +473,16 @@ Haunting shriek causes the player to lose all attack ability for 2 seconds.
 ## Bosses
 The end of every 3 levels features a boss battle. Bosses are supported by enemies of their same type (so long as they are revealed) that arrive in waves and auto respawn when all minions in a wave are defeated (after a 5-second delay). 
 
-| Lvl | Animal  | Health | Spd | Type   | Spt |
-|-----|---------|--------|-----|--------|-----|
-| 3   | Wolf    | 600    | 30  | walk   | 4   |
-| 6   | Beaver  | 800    | 30  | burrow | 6   |
-| 9   | Eagle   | 1000   | 80  | fly    | 8   |
-| 12  | Cougar  | 1200   | 60  | leap   | 10  |
-| 15  | Bear    | 1400   | 40  | walk   | 12  |
-| 18  | Badger  | 1600   | 50  | burrow | 14  |
-| 21  | Condor  | 1800   | 70  | fly    | 16  |
-| 24  | Gorilla | 2000   | 40  | leap   | 20  |
+| Lvl | Animal  | Health | Spd | Size | Type   | Spt |
+|-----|---------|--------|-----|------|--------|-----|
+| 3   | Wolf    | 600    | 30  | 32   | walk   | 4   |
+| 6   | Beaver  | 800    | 30  | 32   | burrow | 6   |
+| 9   | Eagle   | 1000   | 80  | 32   | fly    | 8   |
+| 12  | Cougar  | 1200   | 60  | 48   | leap   | 10  |
+| 15  | Bear    | 1400   | 40  | 48   | walk   | 12  |
+| 18  | Badger  | 1600   | 50  | 48   | burrow | 14  |
+| 21  | Condor  | 1800   | 70  | 64   | fly    | 16  |
+| 24  | Gorilla | 2000   | 40  | 64   | leap   | 20  |
 
 * "Lvl" = Fight boss at end of this game level
 * "Spd" = movement speed (pixels per second)
@@ -596,19 +596,58 @@ Increases the damage of all minions by 20% for 10 seconds (stacking).
 #### Boom Clap
 A mighty clap that knocks the player down for 5 seconds.
 
-## Props
-### Decorative: Impassable
-* Stalagmite
-* Stalactite
 
-### Decorative: Passable
-* Small Bones
-* Small Fungus
-* Roots
-* Drips
+## Environment
+The entire game takes place in cave. Each level is a new section of the cave. The environment relies on a 16x16 pixel tile set.
+
+### Terrains
+Each level (map) consists of one terrain type. Each type of terrain has ground, hazard and wall tiles, some objects also have per terrain type visuals. Terrain types change every few levels.
+
+| Level | Type/Ground | Hazard | 
+|-------|-------------|--------|
+| 1     | Ash         | Water  |
+| 7     | Dirt        | Void   |
+| 13    | Mud         | Muck   |
+| 16    | Cold        | Ice    |
+| 19    | Hot         | Lava   |
+| 22    | Mutated     | Warp   |
+
+* "Level" = game level that terrain first appears
+
+Terrain types may have effects (on all characters.) These apply regardless of where a character is in the map.
+| Ground | Effect                                  | 
+|---------|-----------------------------------------|
+| Ash     | Visibility reduced by 50%               |
+| Dirt    | none                                    |
+| Mud     | Area of effect damage reduced by 20%    |
+| Cold    | Ranged attacks are 10% slower           |
+| Hot     | If not moving, take 1 damage per second |
+| Mutated | Damage increased by 10%                 |
+
+Hazards have additional effects.
+| Hazard | Effect                                         | 
+|--------|------------------------------------------------|
+| Water  | Movement slowed by 40%                         |
+| Void   | Fall to death                                  |
+| Muck    | Movement slowed by 70%              |
+| Ice    | Harder to stop (characters slide)              |
+| Lava   | 1 damage per second, up to 100 after 5 seconds |
+| Warp   | Moves character to random position   |
+
+
+### Objects
+Maps are also created with various (mostly decorative) objects.
+
+#### Decorative: Impassable
+* Cones
+
+#### Decorative: Passable
+* Various Bones
+* Various Fungus
+* Plants
 * Webs
 
-### Destructible
+#### Destructible
 | Prop              | P  | H   | On destroyed                           |
 |-------------------|----|-----|----------------------------------------|
 | Large Fungus      |    | 300 |                                        |
@@ -624,26 +663,9 @@ A mighty clap that knocks the player down for 5 seconds.
 * "P" = can be moved through
 * "H" = health
 
-### Light casting
+#### Light casting
 * Glowing mushrooms
 * Glowing crystals
-
-
-
-## Terrains
-| Terrain   | Level | Effect                                  | 
-|-----------|-------|-----------------------------------------|
-| Limestone | 1     |                                         |
-| Water     | 1     | Slowed by 66%                           |
-| Rocky     | 4     |                                         |
-| Muddy     | 7     | Slowed by 20%                           |
-| Icy       | 10    | Harder to stop (characters slide)       |
-| Lava      | 16    | If not moving, take 1 damage per second |
-| Mutated   | 22    | Damage increased by 10%                 |
-
-* "Level" = game level that terrain first appears
-* Flying enemies not affected by terrain movement penalties except Lava
-
 
 
 ## User Interface

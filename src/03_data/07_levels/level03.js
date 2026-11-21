@@ -5,6 +5,7 @@
 Levels.level03 = {
 	name: 'The Wolf Den',
 	map: 'map03',
+	terrain: 'ash',
 	boss: 'wolf',
 	crystals: {
 		cyan: {S: 4, M: 2, L: 1},

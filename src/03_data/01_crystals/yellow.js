@@ -15,6 +15,7 @@ Crystals.yellow = {
 		dmg: 60,
 		accuracy: 92,
 		shape: {kind: 'circle', r: 16},
+		effectRadius: 40,   // stagger reaches past the damage circle
 		pattern: {kind: 'cone', degrees: 360},
 		effects: [{status: 'staggered', duration: 1}],
 	},

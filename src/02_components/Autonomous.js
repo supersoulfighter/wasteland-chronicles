@@ -12,6 +12,10 @@ class Autonomous extends Geotic.Component {
 		until: 0,             // ms — current state's hard stop
 		decisionAt: 0,        // ms — next allowed decision tick (~0.25s)
 		maneuverTo: null,     // {x, y} destination for this maneuver
+		// spawn markers can leash an enemy: it idles until the
+		// player crosses activationRadius. 0 = awake at spawn.
+		activationRadius: 0,
+		dormant: false,
 	};
 }
 

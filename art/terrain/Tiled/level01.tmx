@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="56">
- <tileset firstgid="1" source="waster.tsx"/>
+<map version="1.10" tiledversion="1.12.2" class="     " orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="12" nextobjectid="73">
+ <tileset firstgid="1" source="tiles.tsx"/>
  <tileset firstgid="1033" source="objects.tsx"/>
- <layer id="10" name="base" width="64" height="64">
+ <layer id="10" name="hazard" width="64" height="64">
   <data encoding="csv">
 26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,26,27,
 50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,50,51,
@@ -247,6 +247,7 @@
   <object id="54" gid="2147484777" x="576" y="928" width="16" height="32"/>
   <object id="55" gid="2147484777" x="576" y="944" width="16" height="32"/>
  </objectgroup>
+ <objectgroup color="#ffffff" id="11" name="lights"/>
  <layer id="4" name="wall-top" width="64" height="64">
   <data encoding="csv">
 38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,134,88,89,89,89,89,89,89,89,88,158,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,

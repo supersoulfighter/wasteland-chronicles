@@ -71,7 +71,8 @@ src/
     03_enemies/            Enemies.js then rat.js, bat.js, ... (20)
     04_bosses/             Bosses.js then wolf.js, worm.js, ... (8)
     05_props/              Props.js then one file per prop
-    06_terrains/           Terrains.js then one file per terrain (7)
+    06_terrains/           Terrains.js (holds `.grounds` + `.hazards`)
+                           then one file per terrain (12)
     07_levels/             Levels.js then level01.js ... level24.js
     08_worldmap/           WorldMap.js — node graph for the map screen
     09_prefabs/            Prefabs.js then player.js, enemy.js,
@@ -108,7 +109,7 @@ src/
     openDoorsCmd.js  enterArenaCmd.js  completeLevelCmd.js
     retryLevelCmd.js  saveProgressCmd.js  swallowProjectileCmd.js
     reaction listeners:  stopWavesCmd.js  checkLevelClearCmd.js
-      hudRefreshCmd.js  playSfxCmd.js
+      hudRefreshCmd.js  playSfxCmd.js  playerDiedCmd.js
     99_specials/           one `*Cmd` per boss special + the map
       BossSpecials.js      `const BossSpecials = {}` (uppercase sorts
                            before the lowercase `*Cmd` files)
@@ -535,7 +536,7 @@ Core
 | Rendered      | `sprite`, `anim`              | `face(dir)`, `playAnim()`, `pos()`    |
 | Damageable    | `value`, `max`                | `apply(n)` (clamped), `dead()`        |
 | Allied        | `id` — player\|enemy\|allied  |                                       |
-| Moveable      | `speed`, `facing`, `intent{x,y}`, `terrainMult` | `effectiveSpeed()` — reads siblings (slow, rage, terrain) |
+| Moveable      | `speed`, `facing`, `intent{x,y}`, `terrainMult`, `terrainIce`, `terrainDmgMult`, `hazardSecs`, `warpAt` | `effectiveSpeed()` — reads siblings (slow, rage, terrain) |
 
 Player
 
@@ -631,7 +632,8 @@ Prefabs.projectile = (attack, team) => [
 ];
 ```
 
-`Autonomous` (`{style, state, until, decisionAt, maneuverTo}`) is in
+`Autonomous` (`{style, state, until, decisionAt, maneuverTo,
+activationRadius, dormant}`) is in
 `Autonomous.js` like every component — enemy defs add it via the
 `enemy` recipe; the player never gets one.
 
@@ -699,10 +701,16 @@ commands (`attack` → `executeAttackCmd`, `special` → `useActiveCmd`,
 
 ### TerrainSystem (`04_systems/01_queries/TerrainSystem.js`)
 
-Query `movers`. Tile under the entity → terrain def → set
-`moveable.terrainMult`, apply ice drag, and lava ticks via
-`resolveHitCmd({direct: true})`. Burrowed entities skip everything
-except lava.
+Query `movers`. Two terrain channels: the map-wide `grounds` def
+(named by the level def's `terrain` key) stamps
+`moveable.terrainDmgMult` and map effects (mud AoE mult, cold
+projectile drag, ash vision, hot idle burn) on every mover, and the
+per-tile `hazards` layer under the body — exposed wherever no solid
+ground tile covers it — sets `terrainMult`/`terrainIce`, cleanses
+status (water), teleports (warp), drops you into pits (void), or
+ticks DoT via `resolveHitCmd({direct: true})` (lava ramps
+1→100 DPS over 5 s of exposure). Flyers and Burrowed entities skip
+hazards entirely.
 
 ### MovementSystem (`04_systems/01_queries/MovementSystem.js`)
 
@@ -759,7 +767,7 @@ by stagger/knockdown/grab channel rules.
 - `maneuver` — destination angle per style (walk→front, leap→sides,
   burrow→behind, fly→any), stop at max maneuver time.
 - Style movement: fly = free 8-dir (Evasive component added at spawn) +
-  ignores terrain except lava; leap = hop arcs; burrow = toggles
+  ignores all hazards; leap = hop arcs; burrow = toggles
   `Burrowed` + `Invulnerable`, keeps wall collision, sinks sprite;
   walk = direct chase.
 - `lickWounds` — retreat point, regen status over 5s.
@@ -783,10 +791,19 @@ player start, not in water unless allowed), places pickup objects.
 
 ### LevelManager (`04_systems/02_managers/LevelManager.js`)
 
-- Loads Tiled JSON: layers `ground`, `terrain`, `props`, `objects`.
+- Loads Tiled JSON: tile layers `hazard`, `ground`, `wall`,
+  `wall-top` (bottom→top) plus object layers `objects`, `lights`.
+- Builds `scene.freeTiles` (solid ground tiles — no wall, no
+  transition shape) before placing objects, so spawn markers can
+  scatter; crystals draw from whatever tiles remain.
 - Instantiates map objects: `playerStart` → `spawnPlayerCmd`, `enemy`
   → `spawnEnemyCmd`, `prop`/`door`/`exit`/`bossArena`/`light` → plain
-  zone/prop objects.
+  zone/prop objects. Tile objects from the `enemies` multiple-image
+  tileset are spawn markers: the tile's `key` property names the
+  `Enemies` row; `spawnCount` (default 1) scatters the pack to free
+  tiles and `activationRadius` > 0 spawns them dormant until the
+  player closes in. Properties may live on the tileset tile or the
+  object instance — instance wins.
 - Exit zone → `completeLevelCmd`; `bossArena` enter → `enterArenaCmd`
   (seal doors, spawn boss); `died` on a boss → `openDoorsCmd` (wired).
 
@@ -967,12 +984,12 @@ hit already landed — but mitigation still applies.
 
 ## Physics groups & collision matrix
 
-| A \ B          | walls | enemies | e-projectiles | e-melee | pickups | doors | props |
-|----------------|-------|---------|---------------|---------|---------|-------|-------|
-| player         | collide | collide | overlap→hit | overlap→hit | overlap→take | collide when sealed | collide impassable |
-| enemies        | collide | separate | — | — | — | collide | collide |
-| p-projectiles  | destroy/bounce | overlap→hit | — | — | — | destroy | overlap→damage prop |
-| p-melee        | — | overlap→hit | — | — | — | — | overlap→damage prop |
+| A \ B         | walls          | enemies     | e-projectiles | e-melee     | pickups      | doors               | props               |
+|---------------|----------------|-------------|---------------|-------------|--------------|---------------------|---------------------|
+| player        | collide        | collide     | overlap→hit   | overlap→hit | overlap→take | collide when sealed | collide impassable  |
+| enemies       | collide        | separate    | —             | —           | —            | collide             | collide             |
+| p-projectiles | destroy/bounce | overlap→hit | —             | —           | —            | destroy             | overlap→damage prop |
+| p-melee       | —              | overlap→hit | —             | —           | —            | —                   | overlap→damage prop |
 
 Burrowing enemies keep wall collision, ignore props. Flying enemies
 collide with walls. `G` attacks bypass collision entirely.
@@ -987,7 +1004,8 @@ Every overlap/collide cell resolves sprites → entities
 1. `InputManager` — poll devices, resolve aim.
 2. `PlayerSystem` — input → intent, mutation decay, button → commands.
 3. `EnemyAI` — decision ticks → intent / `executeAttackCmd` / specials.
-4. `TerrainSystem` — tile under movers → mults, ice, lava damage.
+4. `TerrainSystem` — ground effects + tile hazards under movers →
+   mults, ice, lava damage.
 5. `MovementSystem` — intent → velocity, facing/anims, separation.
 6. *(arcade step runs inside Phaser)* — overlap/collide callbacks call
    commands as hits land.
@@ -999,36 +1017,46 @@ Every overlap/collide cell resolves sprites → entities
 Commands also run outside the tick — inside physics callbacks (step 6)
 and UI events — which is why they own whole transactions.
 
-## Asset conventions
 
-- Spritesheets: `assets/images/spr-{name}.png`, 16×16 frames, rows =
-  down/right/up (left = `flipX`). Anim keys `spr-{name}-{anim}`;
-  attack anims keyed by crystal `anim` field.
-- Tilesets: `assets/images/tiles-{terrain}.png`; maps:
-  `assets/maps/{key}.json`.
-- Icons: `assets/images/icons/icon-{key}.png` (already an icons dir).
-- Particles: `assets/images/particles/`; emitter configs as data in
-  `03_data/particles.js` so students tune without code.
-- Placeholders: `placeholder.js` generates solid-color textures for
-  every missing key at boot — code is written against final keys from
-  day one.
+## Level authoring 
 
-## Level authoring pipeline (SpriteFusion)
+The Tiled desktop application is used to author maps.
 
-1. Draw map in SpriteFusion; export its **broad JSON** (richer than
-   the Phaser/Tiled preset — object metadata survives) plus the
-   tileset PNG into `art/maps/`.
-2. `tools/convert-spritefusion.mjs` (node script, run via
-   `yarn convert-maps`) reads the broad JSON and emits Tiled JSON into
-   `public/assets/maps/`.
-3. Conventions students must follow:
-   - Layers named exactly `ground`, `terrain`, `props`, `objects`.
-   - Wall tiles from the marked collision range of the tileset.
-   - Objects by type name: `playerStart`, `enemy` (custom prop
-     `type=rat`), `prop` (`type=largeRock`), `door` (`id=n`),
-     `exit`, `bossArena` (rect), `light` (`color`, `radius`).
-4. Add `07_levels/levelNN.js` (name, map key, crystal counts, boss
-   key) and its node in `08_worldmap/WorldMap.js`.
+### Conventions
+* Each map should adhere to a single terrain type. 
+* Tiled Objects layers use the multiple-image tileset only.
+* Enemy spawn markers are tile objects drawn from the `enemies`
+  tileset: the tile's `key` property names the `Enemies` row.
+  Optional `spawnCount` and `activationRadius` may be set on the
+  tileset tile or overridden per object instance — instance wins.
+* Flipping tiles horizontally is ok as long as it looks ok.
+* Flipping tiles vertically is strongly discouraged.
+* In order from the bottom, each map must have the following layers:
+
+#### hazard
+This layer is entirely filled with whichever hazard tiles exist for the terrain type.
+
+#### ground
+This is the primary layer characters "walk" on. Ground terrain tiles transition to transparent edges rather than hazard because this allows us to have a shader on the entire hazard layer.
+
+#### wall
+This layer is mostly drawn automatically (AutoMap) as a result of  drawing the wall-top layer.
+
+#### objects
+Tiled Objects layer, mostly for ground-based objects.
+
+#### lights
+Tiled Objects layer exclusively for crystal or mushroom lights.
+
+#### wall-top
+This is the layer the author draws to route the player through the map. Wall sides are drawn automatically on the wall layer. 
+
+### Terrain collisions
+Because the entire hazard layer is filled, detecting when a character should actually be affected by hazard effects involves some logic:
+* If they are only touching a ground tile, no hazard effect.
+* If they are touching the collision shape of a ground transition tile,  effect applied.
+* If they are only touching hazard tiles, effect applied.
+
 
 ## Screens
 

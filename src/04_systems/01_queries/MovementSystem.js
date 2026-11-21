@@ -12,6 +12,12 @@ const MovementSystem = {
 			const mv = e.moveable;
 			const body = e.rendered.sprite.body;
 
+			// spawn-marker leashes: dormant entities hold position
+			if (e.autonomous?.dormant) {
+				body.setVelocity(0, 0);
+				continue;
+			}
+
 			if (e.feared) {              // fear overrides input
 				mv.intent.x = e.feared.dir.x;
 				mv.intent.y = e.feared.dir.y;

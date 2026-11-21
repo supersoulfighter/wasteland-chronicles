@@ -4,6 +4,7 @@
 Levels.level20 = {
 	name: 'Echoing Deep',
 	map: 'map20',
+	terrain: 'hot',
 	boss: null,
 	crystals: {
 		cyan: {S: 12, M: 6, L: 3},

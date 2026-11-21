@@ -4,6 +4,7 @@
 Levels.level04 = {
 	name: 'Broken Teeth',
 	map: 'map04',
+	terrain: 'ash',
 	boss: null,
 	crystals: {
 		cyan: {S: 7, M: 3, L: 1},

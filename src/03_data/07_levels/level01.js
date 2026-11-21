@@ -4,6 +4,7 @@
 Levels.level01 = {
 	name: 'Shallow Dark',
 	map: 'map01',
+	terrain: 'ash',
 	boss: null,
 	crystals: {
 		cyan: {S: 6, M: 3, L: 1},

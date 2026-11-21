@@ -17,7 +17,9 @@ const spawnProjectileCmd = ({scene, attacker, attack, from, angle}) => {
 	e.rendered.sprite = sprite;
 	e.ballistic.origin = {x: from.x, y: from.y};   // accuracy decay reads this
 
-	const speed = e.ballistic.speed;
+	// cold ground drags on every projectile in the level
+	const speed = e.ballistic.speed
+		* (getGroundDef()?.projSpeedMult ?? 1);
 	sprite.body.setVelocity(
 		Math.cos(angle) * speed, Math.sin(angle) * speed);
 	// bounce patterns ricochet off walls — arcade does the reflecting

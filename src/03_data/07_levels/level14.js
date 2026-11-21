@@ -4,6 +4,7 @@
 Levels.level14 = {
 	name: 'Skulk Hollow',
 	map: 'map14',
+	terrain: 'mud',
 	boss: null,
 	crystals: {
 		cyan: {S: 10, M: 5, L: 2},

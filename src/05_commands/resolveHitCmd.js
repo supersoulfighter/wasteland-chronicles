@@ -20,11 +20,15 @@ const resolveHitCmd = ({attacker, target, attack, direct}) => {
 	// 2. mitigate — commutative multipliers/blocks
 	let amount = attack.dmg;
 	amount = target.armored?.mitigate(amount) ?? amount;
-	if (target.attuned && !direct) {
-		amount = target.attuned.block(amount);   // 10-block antenna
+	if (target.attuned && !direct && !melee) {
+		amount = target.attuned.block(amount);   // antenna: ranged only
 	}
 	amount *= attacker?.statusCarrying?.mult('dmg') ?? 1;
-	amount *= attacker?.moveable?.terrainDmgMult ?? 1;   // mutated floor
+	amount *= attacker?.moveable?.terrainDmgMult ?? 1;   // mutated ground
+	// mud ground muffles explosions — aoe-pattern hits only
+	if (attack.pattern?.kind === 'aoe') {
+		amount *= getGroundDef()?.aoeDmgMult ?? 1;
+	}
 	// Boxer / Dexterity passives
 	if (attacker?.powered) {
 		const stat = melee ? 'meleeDmg' : 'rangedDmg';
@@ -33,7 +37,9 @@ const resolveHitCmd = ({attacker, target, attack, direct}) => {
 			if (def?.stat === stat) amount *= def.mult ?? 1;
 		}
 	}
-	if (amount <= 0) return;                          // fully blocked
+	// fully blocked — but a zero-damage hit still delivers its
+	// effects (the stagger half of an outer-ring touch)
+	if (amount <= 0 && !attack.effects?.length) return;
 
 	// 3. apply — one place, guaranteed last
 	target.damageable.apply(-amount);

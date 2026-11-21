@@ -4,6 +4,7 @@
 Levels.level07 = {
 	name: 'Mudflats',
 	map: 'map07',
+	terrain: 'dirt',
 	boss: null,
 	crystals: {
 		cyan: {S: 8, M: 4, L: 1},

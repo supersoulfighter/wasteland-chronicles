@@ -6,29 +6,39 @@
 // each level run builds a fresh `world` from it (see Playing).
 const ECS = new Geotic.Engine();
 
-// Where the current level run keeps its world, query table, and wall
-// layer. Playing.create calls bindWorld/bindLevel; commands and
-// helpers read them here so nothing has to thread a scene reference
-// through every call.
+// Where the current level run keeps its world, query table, and
+// wall/hazard layers. Playing.create calls bindWorld/bindLevel;
+// commands and helpers read them here so nothing has to thread a
+// scene reference through every call.
 let world = null;
 let queries = null;
 let walls = null;
-let terrain = null;
+let hazards = null;
+let grounds = null;
 
 const bindWorld = (newWorld, newQueries) => {
 	world = newWorld;
 	queries = newQueries;
 };
 
-const bindLevel = ({wallLayer, terrainLayer}) => {
+const bindLevel = ({wallLayer, hazardLayer, groundLayer}) => {
 	walls = wallLayer;
-	terrain = terrainLayer ?? null;
+	hazards = hazardLayer ?? null;
+	grounds = groundLayer ?? null;
 };
 
 const getWorld = () => world;
 const getQueries = () => queries;
 const getWalls = () => walls;
-const getTerrain = () => terrain;
+const getHazardLayer = () => hazards;
+const getGroundLayer = () => grounds;
+
+// The current level's map-wide ground def (Terrains.grounds) —
+// every consumer of a terrain effect reads it through here.
+const getGroundDef = () =>
+	Terrains.grounds[
+		game.scene.getScene('Playing')?.level?.def?.terrain
+	] ?? null;
 
 // Sprite → entity lookup used by every collision callback. Sprites
 // carry their entity id as data (written by the spawn commands).

@@ -19,6 +19,11 @@ class Ballistic extends Geotic.Component {
 		swallowable: true,   // rays can't be swallowed (Regurge Surge)
 		pattern: null,       // the def's pattern, for on-impact behavior
 		speed: 0,
+		// volley bookkeeping — a shared log lets the last strike pay
+		// bonusDmg only when every shot connected (scorpion)
+		volleyLog: null,
+		volleyBonus: 0,
+		lastStrike: false,
 	};
 }
 

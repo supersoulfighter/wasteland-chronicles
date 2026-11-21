@@ -4,6 +4,7 @@
 Levels.level17 = {
 	name: 'The Long Burrow',
 	map: 'map17',
+	terrain: 'cold',
 	boss: null,
 	crystals: {
 		cyan: {S: 11, M: 5, L: 2},

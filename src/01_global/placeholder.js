@@ -47,7 +47,7 @@ const ensureIcon = (scene, key) => {
 // fill whatever is missing. The tables are call-time globals here —
 // this runs inside Boot.create, long after file-load.
 const makePlaceholderTextures = (scene) => {
-	const sprites = new Set(['xavier', 'bullet', 'crystal']);
+	const sprites = new Set(['xavier', 'bullet', 'crystal', 'spr-door']);
 	const icons = new Set();
 
 	Object.values(Crystals).forEach(def => icons.add(def.icon));
