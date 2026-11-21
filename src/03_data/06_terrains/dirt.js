@@ -1,0 +1,10 @@
+//#region 03_data/06_terrains/dirt.js /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+// Dirt ground (levels 7-12) — plain cave floor, no modifiers.
+Terrains.grounds.dirt = {
+	key: 'dirt',
+	name: 'Dirt',
+};
+
+//#endregion
